@@ -1,0 +1,70 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Mon Nov  2 19:06:54 2026
+# Process ID         : 21372
+# Current directory  : C:/p4/sim_post
+# Command line       : xsim.exe -log resultado_tb_pwm_axi_postimpl.log -mode tcl -source {xsim.dir/sim_post/xsim_script.tcl}
+# Log file           : C:/p4/sim_post/resultado_tb_pwm_axi_postimpl.log
+# Journal file       : C:/p4/sim_post\xsim.jou
+# Running On         : Herrera
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13620H
+# CPU Frequency      : 2918 MHz
+# CPU Physical cores : 10
+# CPU Logical cores  : 16
+# Host memory        : 16869 MB
+# Swap memory        : 20401 MB
+# Total Virtual      : 37270 MB
+# Available Virtual  : 10780 MB
+#-----------------------------------------------------------
+source xsim.dir/sim_post/xsim_script.tcl
+# xsim {sim_post} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+[PASS] reset: Control/Estado: leido 0x00000000, esperado 0x00000000
+[PASS] reset: duty_ref: leido 0x00000000, esperado 0x00000000
+[PASS] reset: dead_time = 20: leido 0x00000014, esperado 0x00000014
+[PASS] reset: registro reservado 0x0C: leido 0x00000000, esperado 0x00000000
+[PASS] RRESP = OKAY
+[PASS] BRESP = OKAY
+[PASS] escribir running con enable = 0 no lo cambia: leido 0x00000000, esperado 0x00000000
+[PASS] freq_sel = 10 y bits reservados leen 0: leido 0x00000004, esperado 0x00000004
+[PASS] duty_ref = +0,5: leido 0x00004000, esperado 0x00004000
+[PASS] duty_ref = -0,5: leido 0x0000c000, esperado 0x0000c000
+[PASS] duty_ref = +M_MAX se acepta: leido 0x00007999, esperado 0x00007999
+[PASS] duty_ref > M_MAX se satura a +M_MAX: leido 0x00007999, esperado 0x00007999
+[PASS] duty_ref < -M_MAX se satura a -M_MAX: leido 0x00008667, esperado 0x00008667
+[PASS] duty_ref ignora los bits [31:16]: leido 0x00004000, esperado 0x00004000
+[PASS] WSTRB = 0001 solo cambia el byte bajo: leido 0x000012ab, esperado 0x000012ab
+[PASS] WSTRB = 0000 no cambia nada: leido 0x000012ab, esperado 0x000012ab
+[PASS] dead_time = 0 se satura a DT_MIN = 10: leido 0x0000000a, esperado 0x0000000a
+[PASS] dead_time = 5 se satura a DT_MIN = 10: leido 0x0000000a, esperado 0x0000000a
+[PASS] dead_time = 200 se acepta: leido 0x000000c8, esperado 0x000000c8
+[PASS] dead_time ignora los bits [31:8]: leido 0x000000ff, esperado 0x000000ff
+[PASS] AW llega 3 ciclos antes que W: leido 0x00000019, esperado 0x00000019
+[PASS] W llega 3 ciclos antes que AW: leido 0x0000001a, esperado 0x0000001a
+[PASS] escritura a 0x0C responde OKAY
+[PASS] 0x0C sigue leyendo 0: leido 0x00000000, esperado 0x00000000
+[PASS] escribir 0x0C no cambia los otros registros: leido 0x0000001a, esperado 0x0000001a
+[PASS] con enable = 1 running se lee en 1: leido 0x00000009, esperado 0x00000009
+[PASS] periodo a 100 kHz: 1000 ciclos (esperado 1000)
+[PASS] periodo a 80 kHz desde el registro: 1250 ciclos (esperado 1250)
+[PASS] periodo a 125 kHz desde el registro: 800 ciclos (esperado 800)
+[PASS] enable = 0 por AXI apaga las 4 compuertas
+[PASS] con enable = 0 running se lee en 0: leido 0x00000004, esperado 0x00000004
+[PASS] apagado no hay pulsos ni disparos
+[PASS] nunca hubo dos transistores de la misma pierna encendidos (0 ciclos)
+[PASS] tampoco hubo solape entre flancos (0 veces)
+[PASS] las salidas nunca quedaron en X (0 ciclos)
+
+==============================================
+ tb_pwm_axi: 35 pruebas, 0 fallas
+ RESULTADO: PASA
+==============================================
+$finish called at time : 126170 ns : File "C:/p4/sim_post/tb_pwm_axi.sv" Line 308
+exit
+INFO: [Common 17-206] Exiting xsim at Mon Nov  2 19:07:02 2026...
