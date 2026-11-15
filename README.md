@@ -128,10 +128,12 @@ Mapa de direcciones que asigna el Block Design:
 | SW2..SW1 | `freq_sel`: 00 = 100 kHz, 01 = 80 kHz, 10 = 125 kHz |
 | SW4..SW3 | Amplitud de la referencia: 00 = 0,2 A, 01 = 0,5 A, 1x = 1,0 A pico |
 | SW15 | 1 = corriente leída con el XADC, 0 = carga RL simulada en el programa |
+| SW14 | Modo emulador: la corriente se lee de un circuito RC conectado al XADC. Solo sin la etapa de potencia |
 | BTNC | Exporta el buffer por UART |
 | LD0 | Lazo habilitado |
 | LD1 | Falla (corriente fuera del límite) |
 | LD2 | Exportación en curso |
+| LD3 | Modo emulador activo |
 
 Pines usados: compuertas en el Pmod JA (JA1 `gate_a_h_o`, JA2 `gate_a_l_o`, JA3 `gate_b_h_o`, JA4 `gate_b_l_o`), JA7 `pwm_trigger_o`, JA8 pin de prueba que cambia en cada interrupción, y la entrada analógica en JXADC pin 1 (VAUX3P) y pin 7 (VAUX3N). La entrada del XADC trabaja de 0 a 1 V.
 
