@@ -578,7 +578,7 @@ El procesador lee `CTRL` para consultar `running`, o cualquier otro registro par
 
 En el programa no se escribe a los registros directamente: se usan las funciones de `pwm_driver.h` con la dirección `XPAR_PWM_0_BASEADDR` de `xparameters.h` (ver `DOCUMENTACION_PWM_DRIVER.md`).
 
-Esta organización permite reutilizar la misma interfaz que usan los otros periféricos del sistema. La salida `pwm_trigger_o` se conecta al disparo del ADC/XADC y las cuatro compuertas van a los pines que llegan al circuito de accionamiento del puente H.
+Esta organización permite reusar la misma interfaz que usan los otros periféricos del sistema. La salida `pwm_trigger_o` se conecta al disparo del ADC/XADC y las cuatro compuertas van a los pines que llegan al circuito de accionamiento del puente H.
 
 ---
 
