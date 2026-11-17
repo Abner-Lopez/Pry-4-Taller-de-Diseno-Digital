@@ -1,7 +1,9 @@
 `timescale 1ns / 1ps
 
+// pwm_bd.v
 // Este modulo se usa para poder agregar el PWM al Block Design con
-// Add Module. Se hizo este en Verilog que solo conecta
+// Add Module. Vivado no deja usar un modulo en SystemVerilog como el de
+// arriba en ese caso, entonces se hizo este en Verilog que solo conecta
 // los puertos de pwm_axi. Aqui no hay logica, todo el PWM esta en
 // pwm_axi.sv y pwm_core.sv.
 // Los atributos X_INTERFACE son para que Vivado reconozca las senales
