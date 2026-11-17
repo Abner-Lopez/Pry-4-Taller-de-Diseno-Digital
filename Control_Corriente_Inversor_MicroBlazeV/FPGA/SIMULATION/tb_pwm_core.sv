@@ -1,3 +1,9 @@
+// tb_pwm_core.sv
+// Testbench autoverificable de pwm_core. Prueba el periodo de cada
+// freq_sel, el ancho de los pulsos, varios tiempos muertos, los cambios a
+// mitad de periodo, el disparo y el apagado. Ademas vigila todo el tiempo
+// que no haya solape en ninguna pierna.
+
 `timescale 1ns / 1ps
 
 module tb_pwm_core;
@@ -115,9 +121,6 @@ module tb_pwm_core;
         medir(c, al, bl);
         esp_al = esperado_bajo(p, m, dt);
         esp_bl = esperado_bajo(p, -m, dt);
-`ifdef FORZAR_FALLA
-        esp_al = esp_al + 1;
-`endif
         revisar(c == 2 * p, $sformatf("%s: periodo %0d ciclos (esperado %0d)", nombre, c, 2 * p));
         revisar(al == esp_al, $sformatf("%s: pierna A abajo encendida %0d ciclos (esperado %0d)", nombre, al, esp_al));
         revisar(bl == esp_bl, $sformatf("%s: pierna B abajo encendida %0d ciclos (esperado %0d)", nombre, bl, esp_bl));
