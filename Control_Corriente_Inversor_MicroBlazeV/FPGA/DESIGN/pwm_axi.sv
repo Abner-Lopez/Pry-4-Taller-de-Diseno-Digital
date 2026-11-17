@@ -1,6 +1,9 @@
 `timescale 1ns / 1ps
 
 // pwm_axi.sv
+// Periferico PWM con interfaz AXI4-Lite. La parte AXI se hizo a partir de
+// la plantilla de esclavo que genera Vivado. Aqui estan los registros y la
+// saturacion, y se instancia pwm_core.
 //
 // Registros (offset):
 //   0x00 Control/Estado: bit 0 enable (R/W), bits [2:1] freq_sel (R/W),
@@ -21,7 +24,7 @@ module pwm_axi #(
     parameter int F_SW2  = 125_000,
     parameter bit GATE_ACTIVE_HIGH = 1'b1,
 
-    // limite de |duty_ref| en Q1.15 (supuesto: 0,95 hasta que PEDP lo defina)
+    // limite de |duty_ref| en Q1.15 (0,95)
     parameter logic [15:0] M_MAX = 16'd31129,
     // tiempo muerto despues de reset y minimo permitido, en ciclos
     parameter logic [7:0] DT_RESET = 8'd20,
@@ -264,4 +267,3 @@ module pwm_axi #(
     );
 
 endmodule
-
