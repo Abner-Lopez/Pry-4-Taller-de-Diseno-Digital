@@ -40,9 +40,9 @@ El subsistema PWM está compuesto por dos módulos.
 | `pwm_axi` | Es el módulo superior. Implementa la interfaz AXI4-Lite, guarda los registros y satura los valores fuera de rango. |
 | `pwm_core` | Es el núcleo del PWM. Genera la portadora, la modulación unipolar, el tiempo muerto y el disparo del ADC. |
 
-La idea es separar claramente la comunicación con el procesador (`pwm_axi`) de la generación de las señales (`pwm_core`). El núcleo no sabe nada de AXI: solo recibe valores ya listos y los convierte en señales de compuerta.
+La idea es separar claramente la comunicación con el procesador (`pwm_axi`) de la generación de las señales (`pwm_core`). 
 
-Dentro de `pwm_core` hay varios bloques lógicos. No son módulos aparte, pero ayudan a entender cómo funciona.
+Dentro de `pwm_core` hay varios bloques lógicos.
 
 | Bloque | Función |
 |--------|---------|
@@ -539,7 +539,7 @@ El diseño depende de algunos parámetros configurables.
 
 | Parámetro | Valor | Descripción |
 |-----------|-------|-------------|
-| `M_MAX` | 31129 | Límite de `|duty_ref|` en Q1.15 (≈ 0,95). Es un supuesto hasta que se defina con la parte de potencia. |
+| `M_MAX` | 31129 | Límite de `duty_ref` en Q1.15 (≈ 0,95). Es un supuesto hasta que se defina con la parte de potencia. |
 | `DT_RESET` | 20 | Tiempo muerto después de un reset (200 ns). |
 | `DT_MIN` | 10 | Tiempo muerto mínimo permitido (100 ns). |
 
