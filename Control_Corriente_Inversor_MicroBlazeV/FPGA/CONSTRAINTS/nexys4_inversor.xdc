@@ -63,7 +63,7 @@ set_property PACKAGE_PIN P2 [get_ports {leds_tri_o[15]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {leds_tri_o[*]}]
 
 ## Pmod JA: salidas del PWM hacia los drivers del puente H y senales para
-## el osciloscopio (pines segun el master XDC de la Nexys 4, revisar)
+## el osciloscopio (pines segun el master XDC de la Nexys 4)
 ##   JA1 gate_a_h_o   JA2 gate_a_l_o   JA3 gate_b_h_o   JA4 gate_b_l_o
 ##   JA7 pwm_trigger_o   JA8 pin de prueba del lazo (prueba_tri_o)
 set_property PACKAGE_PIN B13 [get_ports gate_a_h_o]
@@ -75,7 +75,7 @@ set_property PACKAGE_PIN C17 [get_ports {prueba_tri_o*}]
 set_property IOSTANDARD LVCMOS33 [get_ports {gate_a_h_o gate_a_l_o gate_b_h_o gate_b_l_o pwm_trigger_o prueba_tri_o*}]
 
 ## JXADC: entrada analogica del XADC, canal AD3 (pin 1 positivo, pin 7 negativo).
-## Rango de entrada del XADC: 0 a 1 V (unipolar). Revisar contra el master XDC.
+## Rango de entrada del XADC: 0 a 1 V (unipolar).
 set_property PACKAGE_PIN A13 [get_ports vaux3_v_p]
 set_property PACKAGE_PIN A14 [get_ports vaux3_v_n]
 set_property IOSTANDARD LVCMOS33 [get_ports {vaux3_v_p vaux3_v_n}]
