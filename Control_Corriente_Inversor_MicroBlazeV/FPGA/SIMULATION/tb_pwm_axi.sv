@@ -97,7 +97,6 @@ module tb_pwm_axi;
         if ((a_h && a_l) || (b_h && b_l)) solape_continuo++;
     end
 
-    // cuenta los ciclos con alguna salida en X despues del reset
     // con m = 0, cuando sale trig tienen que estar encendidos los de arriba
     int trig_vistos = 0;
     int trig_fuera  = 0;
@@ -108,20 +107,18 @@ module tb_pwm_axi;
         end
     end
 
-    // cuenta cuantos ciclos lleva a_h en 1
-    int ah_cont  = 0;
-    always @(negedge clk) begin
-        if (a_h) ah_cont++;
-        else     ah_cont = 0;
-    end
-
+    // mide un pulso alto de a_h: ciclos antes y despues del ciclo de trig
     task automatic medir_centro(output int antes, output int despues);
-        do @(negedge clk); while (!trig);
-        antes = ah_cont;
+        do @(negedge clk); while (a_h);
+        do @(negedge clk); while (!a_h);
+        antes = 0;
+        while (!trig) begin antes++; @(negedge clk); end
         despues = 0;
-        do begin @(negedge clk); despues++; end while (a_h);
+        @(negedge clk);
+        while (a_h) begin despues++; @(negedge clk); end
     endtask
 
+    // cuenta los ciclos con alguna salida en X despues del reset
     int ciclos_x = 0;
     always @(negedge clk) begin
         if (aresetn === 1'b1 && $isunknown({a_h, a_l, b_h, b_l, trig})) ciclos_x++;
@@ -289,7 +286,7 @@ module tb_pwm_axi;
             int antes, despues;
             medir_centro(antes, despues);
             revisar(despues - antes == DIF_TRIG,
-                    $sformatf("trig cae en el valle: a_h lleva %0d ciclos antes y %0d despues (diferencia esperada %0d)",
+                    $sformatf("trig cae en el valle: a_h lleva %0d ciclos antes del disparo y %0d despues (diferencia esperada %0d)",
                               antes, despues, DIF_TRIG));
         end
 
