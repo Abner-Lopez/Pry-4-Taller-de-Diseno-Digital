@@ -200,4 +200,51 @@ static void rutina_control(void *referencia, u8 numero_contador)
 // ---------------------------------------------------------------
 // Configuracion
 // ---------------------------------------------------------------
-//pendiente: agregar funcion para reiniciar el PR y la planta al habilitar el lazo
+void control_isr_reiniciar_tiempos(void)
+{
+    control_isr_max = 0;
+    control_lat_min = 0xFFFFFFFFU;
+    control_lat_max = 0;
+}
+
+int control_isr_iniciar(void)
+{
+    u32 n;
+    float s, c, s_nuevo;
+    // seno y coseno de 2*pi/400, para generar la tabla girando un punto
+    const float cos_paso = 0.9998766325f;
+    const float sin_paso = 0.0157073173f;
+
+    // tabla del seno sin usar sinf, porque la libreria matematica ocupa
+    // mucha memoria
+    s = 0.0f;
+    c = 1.0f;
+    for (n = 0; n < CONTROL_N_REF; n++) {
+        tabla_seno[n] = s;
+        s_nuevo = s * cos_paso + c * sin_paso;
+        c = c * cos_paso - s * sin_paso;
+        s = s_nuevo;
+    }
+
+    control_pr_reiniciar(&pr);
+
+    // PWM apagado, duty 0 y 200 ns de tiempo muerto
+    pwm_control(PWM_BASE, 0, PWM_FREQ_100KHZ);
+    pwm_duty_q15(PWM_BASE, 0);
+    pwm_tiempo_muerto(PWM_BASE, 20);
+
+    // Timer con interrupcion cada Ts
+    if (XTmrCtr_Initialize(&timer, TIMER_BASE) != XST_SUCCESS)
+        return -1;
+    if (XSetupInterruptSystem(&timer, XTmrCtr_InterruptHandler,
+                              timer.Config.IntrId, timer.Config.IntrParent,
+                              XINTERRUPT_DEFAULT_PRIORITY) != XST_SUCCESS)
+        return -2;
+    XTmrCtr_SetHandler(&timer, rutina_control, &timer);
+    XTmrCtr_SetOptions(&timer, CONTADOR_TIMER,
+                       XTC_INT_MODE_OPTION | XTC_AUTO_RELOAD_OPTION | XTC_DOWN_COUNT_OPTION);
+    XTmrCtr_SetResetValue(&timer, CONTADOR_TIMER, TIMER_CARGA);
+    XTmrCtr_Start(&timer, CONTADOR_TIMER);
+
+    return 0;
+}
