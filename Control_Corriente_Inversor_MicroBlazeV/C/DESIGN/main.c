@@ -8,8 +8,12 @@
 //   SW4..SW3   amplitud de la referencia (00 = 0,2 A, 01 = 0,5 A, 1x = 1,0 A)
 //   SW15       1 = corriente del ADC, 0 = planta simulada (sin etapa de potencia)
 //   SW14       emulador RC en el XADC (solo sin la etapa de potencia)
+//   SW13       lazo abierto: m = seno de amplitud fija, sin el PR
+//              (SW4..SW3 da 0,1 / 0,25 / 0,5)
+//   SW12       con SW13, m constante en vez de seno
 //   BTNC       exporta por UART el buffer de muestras en texto tipo CSV
-//   LED0 lazo habilitado, LED1 falla, LED2 exportando, LED3 modo emulador
+//   LED0 lazo habilitado, LED1 falla, LED2 exportando, LED3 modo emulador,
+//   LED4 lazo abierto
 // Cada segundo se imprimen los tiempos de la ISR, el bit running del PWM y
 // la lectura del ADC.
 
@@ -83,7 +87,7 @@ int main(void)
     int estado;
 
     xil_printf("\r\nProyecto 4 - control de corriente\r\n");
-    xil_printf("SW0 lazo, SW2..1 frecuencia, SW4..3 amplitud, SW15 ADC/simulada, SW14 emulador, BTNC exportar\r\n");
+    xil_printf("SW0 lazo, SW2..1 frecuencia, SW4..3 amplitud, SW15 ADC/simulada, SW14 emulador, SW13 lazo abierto, SW12 m constante, BTNC exportar\r\n");
 
     if (XGpio_Initialize(&gpio_leds_sw, GPIO_LEDS_SW_BASE) != XST_SUCCESS ||
         XGpio_Initialize(&gpio_btn, GPIO_BTN_BASE) != XST_SUCCESS) {
@@ -116,12 +120,16 @@ int main(void)
         control_freq_sel = (sw >> 1) & 0x3U;
         control_usar_adc = (sw >> 15) & 0x1U;
         control_emulador = (sw >> 14) & 0x1U;
+        control_lazo_abierto = (sw >> 13) & 0x1U;
+        control_m_constante = (sw >> 12) & 0x1U;
 
         switch ((sw >> 3) & 0x3U) {
             case 0:  control_amplitud = 0.2f; break;
             case 1:  control_amplitud = 0.5f; break;
             default: control_amplitud = 1.0f; break;
         }
+        // en lazo abierto m es la mitad de la amplitud: 0,1 / 0,25 / 0,5
+        control_m_fijo = 0.5f * control_amplitud;
 
         // antirrebote del boton: 3 lecturas seguidas (30 ms) y se exporta
         // una sola vez por cada presion
@@ -134,7 +142,7 @@ int main(void)
         }
 
         leds = (control_habilitado ? 0x1U : 0U) | (control_falla ? 0x2U : 0U) |
-               (control_emulador ? 0x8U : 0U);
+               (control_emulador ? 0x8U : 0U) | (control_lazo_abierto ? 0x10U : 0U);
         XGpio_DiscreteWrite(&gpio_leds_sw, CANAL_LEDS, leds);
 
         if (presionado >= 3 && !ya_exportado) {
@@ -151,7 +159,8 @@ int main(void)
                        control_interrupciones, control_isr_max,
                        control_lat_min, control_lat_max, control_falla,
                        pwm_running(PWM_BASE_MAIN),
-                       control_emulador ? "EMU" : (control_usar_adc ? "ADC" : "SIM"),
+                       control_lazo_abierto ? (control_m_constante ? "M_FIJO" : "ABIERTO") :
+                       (control_emulador ? "EMU" : (control_usar_adc ? "ADC" : "SIM")),
                        control_adc_mv, control_adc_nuevos, control_adc_sin_dato);
             if (control_emulador)
                 xil_printf(" offset=%d mV", control_emu_offset_mv);

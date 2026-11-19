@@ -23,7 +23,7 @@
 
 // escala del emulador RC: se escogio para que un mismo m dé la misma
 // corriente que la carga real. El offset se ajusta solo con el lazo apagado
-#define EMU_GANANCIA       0.282f
+#define EMU_GANANCIA       0.137f
 #define EMU_OFFSET_INICIAL 0.47f
 
 // una muestra del buffer, en enteros para que ocupe menos
@@ -47,6 +47,9 @@ extern volatile u32       control_lat_min;      // latencia minima en ciclos
 extern volatile u32       control_lat_max;      // latencia maxima en ciclos
 extern volatile u32       control_usar_adc;     // 1 = corriente del ADC, 0 = planta simulada
 extern volatile u32       control_emulador;     // 1 = emulador RC (sin la etapa de potencia)
+extern volatile u32       control_lazo_abierto; // 1 = m fijo, sin el PR (prueba del puente)
+extern volatile u32       control_m_constante;  // 1 = m constante en vez de seno (con lazo abierto)
+extern volatile float     control_m_fijo;       // m que se usa en lazo abierto
 extern volatile u32       control_emu_offset_mv;// offset aprendido del emulador en mV
 extern volatile u32       control_adc_mv;       // ultima lectura del ADC en mV
 extern volatile u32       control_adc_nuevos;   // cuantas muestras nuevas llegaron

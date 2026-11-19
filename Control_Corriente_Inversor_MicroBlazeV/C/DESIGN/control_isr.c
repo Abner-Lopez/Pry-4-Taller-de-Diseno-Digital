@@ -6,6 +6,8 @@
 // Con SW14 se usa el emulador: un circuito RC en el XADC que hace de carga.
 // En ese modo el PWM queda encendido aunque el lazo este apagado, por eso
 // no se usa con el puente H conectado.
+// Con SW13 el lazo queda abierto: m es un seno de amplitud fija (o un valor
+// fijo con SW12), sin usar el PR. Sirve para probar el puente solo.
 
 #include "xparameters.h"
 #include "xtmrctr.h"
@@ -43,6 +45,9 @@ volatile u32   control_lat_min = 0xFFFFFFFFU;
 volatile u32   control_lat_max = 0;
 volatile u32   control_usar_adc = 0;
 volatile u32   control_emulador = 0;
+volatile u32   control_lazo_abierto = 0;
+volatile u32   control_m_constante = 0;
+volatile float control_m_fijo = 0.1f;
 volatile u32   control_emu_offset_mv = 0;
 volatile u32   control_adc_mv = 0;
 volatile u32   control_adc_nuevos = 0;
@@ -58,9 +63,10 @@ static float        i_adc = 0.0f;
 static float        emu_offset = EMU_OFFSET_INICIAL;
 
 // modelo de la carga RL: i[k+1] = a*i[k] + (1-a)*Vdc*m[k-1]/R
-// con a = exp(-R*Ts/L), R = 10,3 ohm, L = 198 uH y Vdc = 18 V
-#define PLANTA_A      0.07419859228f
-#define PLANTA_B      (0.9258014077f * 18.0f / 10.3f)
+// con a = exp(-R*Ts/L), R = 5,0 ohm (4,7 + 0,3 de las bobinas), L = 197 uH
+// y Vdc = 18 V
+#define PLANTA_A      0.28110260527f
+#define PLANTA_B      (0.7188973947f * 18.0f / 5.0f)
 static float i_sim = 0.0f;
 static float m_anterior = 0.0f;
 
@@ -127,7 +133,7 @@ static s16 a_s16(float x)
 static void rutina_control(void *referencia, u8 numero_contador)
 {
     u32 t_entrada, t_salida, latencia, duracion;
-    float iref, i, m;
+    float iref, i, m, seno;
     s16 duty;
     u32 activo;
 
@@ -150,7 +156,8 @@ static void rutina_control(void *referencia, u8 numero_contador)
         control_falla = 1;
 
     // 3. referencia de 50 Hz desde la tabla
-    iref = control_amplitud * tabla_seno[k_ref];
+    seno = tabla_seno[k_ref];
+    iref = control_amplitud * seno;
     k_ref++;
     if (k_ref >= CONTROL_N_REF)
         k_ref = 0;
@@ -160,7 +167,12 @@ static void rutina_control(void *referencia, u8 numero_contador)
         // al habilitar se arranca con el PR en cero
         if (!estaba_habilitado)
             control_pr_reiniciar(&pr);
-        m = control_pr_paso(&pr, iref - i);
+        if (control_lazo_abierto) {
+            // lazo abierto: m fijo o seno de amplitud fija, sin el PR
+            m = control_m_constante ? control_m_fijo : control_m_fijo * seno;
+        } else {
+            m = control_pr_paso(&pr, iref - i);
+        }
     } else {
         m = 0.0f;
     }
