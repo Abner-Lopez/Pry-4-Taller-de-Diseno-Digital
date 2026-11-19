@@ -58,8 +58,10 @@ La ISR usa `control_pr.c` para el controlador, `pwm_driver.h` para el PWM y `adc
 | SW4..SW3 | Amplitud de la referencia: `00` = 0,2 A, `01` = 0,5 A, `1x` = 1,0 A. |
 | SW15 | `1`: la corriente sale del XADC. `0`: sale de la planta simulada. |
 | SW14 | Modo emulador: un circuito RC en el XADC hace de carga (solo sin la etapa de potencia). |
+| SW13 | Lazo abierto: `m` sale de los switches y no del PR. Con SW4..SW3, `m` = 0,1 / 0,25 / 0,5. |
+| SW12 | Con SW13 = 1, `m` es constante en lugar de un seno de 50 Hz. |
 | BTNC | Exporta el buffer por UART. |
-| LD0 / LD1 / LD2 / LD3 | Lazo habilitado / falla / exportando / modo emulador. |
+| LD0 / LD1 / LD2 / LD3 / LD4 | Lazo habilitado / falla / exportando / modo emulador / lazo abierto. |
 | JA8 | Pin de prueba: está en 1 mientras corre la rutina de interrupción. |
 
 ---
@@ -79,6 +81,8 @@ La de la izquierda es el lazo de control:
 - **FALLA**: se pasa si la corriente medida supera `CONTROL_I_MAX`. El PWM se apaga en la misma interrupción y LD1 se enciende. Solo se sale bajando SW0.
 
 En el modo emulador (SW14 = 1) el PWM queda encendido con `m = 0` en APAGADO y en FALLA, porque el RC necesita la conmutación para dar el offset. Por eso ese modo no se usa con el puente H conectado.
+
+Con SW13 = 1 el estado ACTIVO no usa el PR: `m` es `m_fijo · sen(ωt)`, o `m_fijo` constante si SW12 = 1, con `m_fijo` = 0,1, 0,25 o 0,5 según SW4..SW3. La protección y el resto de la rutina siguen igual. Este modo se usa para probar el puente H solo, sin depender del sensor ni del PR.
 
 La de la derecha es la exportación. Mientras se envía el buffer (`control_congelado = 1`), la ISR sigue controlando pero no guarda muestras.
 
@@ -137,6 +141,7 @@ int=... isr_max=... lat=MIN..MAX falla=0 run=1 | EMU adc=... mV nuevos=... sin_d
 | `control_amplitud` | `main` | Amplitud de la referencia en A. |
 | `control_freq_sel` | `main` | `freq_sel` que se escribe al PWM. |
 | `control_usar_adc`, `control_emulador` | `main` | Fuente de la corriente (SW15, SW14). |
+| `control_lazo_abierto`, `control_m_constante`, `control_m_fijo` | `main` | Modo de lazo abierto (SW13, SW12) y valor de `m` (SW4..SW3). |
 | `control_congelado` | `main` | 1 mientras se exporta. |
 | `control_falla` | ISR (la borra `main`) | 1 si hubo sobrecorriente. |
 | `control_buffer`, `control_indice`, `control_lleno` | ISR (los reinicia `main`) | Buffer circular. |
@@ -182,6 +187,7 @@ Hacer siempre la misma secuencia en cada periodo de muestreo: leer la corriente,
 4. Se calcula la referencia `iref = control_amplitud · tabla_seno[k_ref]` y `k_ref` avanza. Al llegar a 400 vuelve a 0, así que la referencia tiene exactamente 50 Hz.
 5. El lazo está activo si `control_habilitado = 1` y no hay falla:
    - Si está activo, `m = control_pr_paso(iref − i)`. Si en la interrupción anterior no estaba activo, primero se reinicia el PR.
+   - En lazo abierto (SW13 = 1) el PR no se usa: `m = control_m_fijo · tabla_seno[k_ref]`, o `control_m_fijo` si SW12 = 1.
    - Si no, `m = 0`.
 6. Se escribe `m` al PWM con `pwm_duty()` y después se escribe el control con `pwm_control()`. Escribir el control en cada interrupción hace que una falla apague el PWM en ese mismo periodo, sin esperar a `main`. Después se avanza un paso la planta simulada (`avanzar_planta()`).
 7. Si no se está exportando, se guarda la muestra en `control_buffer[control_indice]` y el índice avanza. Al llegar a 2000 vuelve a 0 y se pone `control_lleno = 1`.
@@ -200,7 +206,7 @@ Con SW15 = 0 y SW14 = 0 la corriente sale de un modelo discreto de la carga RL. 
 
 ```text
 i[k+1] = a · i[k] + (1 − a) · Vdc · m[k−1] / R
-a = exp(−R · Ts / L),   R = 10,3 Ω,   L = 198 µH,   Vdc = 18 V
+a = exp(−R · Ts / L),   R = 5,0 Ω,   L = 197 µH,   Vdc = 18 V
 ```
 
 Se usa `m[k−1]` para tomar en cuenta el retardo de una muestra entre que se mide la corriente y se aplica el nuevo ciclo de trabajo.

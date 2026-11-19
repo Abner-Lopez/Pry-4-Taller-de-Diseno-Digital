@@ -110,10 +110,10 @@ i = (v − SENSOR_OFFSET_V) / SENSOR_GANANCIA,   SENSOR_OFFSET_V = 0,5 V,   SENS
 Con el emulador (SW14 = 1), JA1 y JA4 pasan por un filtro RC hasta un nodo que entra a JXADC1. La tensión de ese nodo tiene un offset más una parte proporcional a `m`, y se convierte así:
 
 ```text
-i = (v − emu_offset) / EMU_GANANCIA,   EMU_GANANCIA = 0,282 V/A
+i = (v − emu_offset) / EMU_GANANCIA,   EMU_GANANCIA = 0,137 V/A
 ```
 
-`EMU_GANANCIA` se escogió para que un mismo `m` dé la misma corriente que la carga real (`Vdc · m / R = 18 · m / 10,3`). El offset se aprende solo: mientras el lazo está apagado `m = 0` y lo que se lee es el offset, así que se promedia con
+`EMU_GANANCIA` se escogió para que un mismo `m` dé la misma corriente que la carga real (`Vdc · m / R = 18 · m / 5,0`). El offset se aprende solo: mientras el lazo está apagado `m = 0` y lo que se lee es el offset, así que se promedia con
 
 ```text
 emu_offset = emu_offset + 0,01 · (v − emu_offset)
