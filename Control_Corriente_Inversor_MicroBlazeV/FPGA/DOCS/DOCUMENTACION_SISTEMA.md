@@ -376,7 +376,7 @@ Para reconstruir el diseño:
 | BRAM | 16 de 135 (11,85 %) | |
 | DSP | 8 de 240 (3,33 %) | |
 
-El timing cierra a 100 MHz. Las 16 BRAM son los 64 KB de la memoria local. Los reportes son del 2 de noviembre; hay que generarlos otra vez con la versión final del diseño antes de la entrega.
+El timing cierra a 100 MHz. Las 16 BRAM son los 64 KB de la memoria local. Los reportes son de la implementación del 2 de noviembre.
 
 En la tarjeta, el sistema completo corrió con el lazo cada 50,0 µs, el PWM en las tres frecuencias y la exportación por UART (pruebas 1 a 5 del informe).
 

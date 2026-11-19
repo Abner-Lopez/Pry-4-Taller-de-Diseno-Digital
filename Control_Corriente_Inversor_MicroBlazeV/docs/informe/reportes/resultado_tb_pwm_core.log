@@ -1,0 +1,95 @@
+#-----------------------------------------------------------
+# xsim v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 19:35:11 GMT 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Thu Nov 19 12:57:16 2026
+# Process ID         : 17096
+# Current directory  : C:/p4/sim_final
+# Command line       : xsim.exe -log resultado_tb_pwm_core.log -mode tcl -source {xsim.dir/sim_core/xsim_script.tcl}
+# Log file           : C:/p4/sim_final/resultado_tb_pwm_core.log
+# Journal file       : C:/p4/sim_final\xsim.jou
+# Running On         : Herrera
+# Platform           : Windows Server 2016 or Windows 10
+# Operating System   : 26300
+# Processor Detail   : 13th Gen Intel(R) Core(TM) i7-13620H
+# CPU Frequency      : 2918 MHz
+# CPU Physical cores : 10
+# CPU Logical cores  : 16
+# Host memory        : 16869 MB
+# Swap memory        : 21474 MB
+# Total Virtual      : 38344 MB
+# Available Virtual  : 11577 MB
+#-----------------------------------------------------------
+source xsim.dir/sim_core/xsim_script.tcl
+# xsim {sim_core} -autoloadwcfg -runall
+Time resolution is 1 ps
+run -all
+[PASS] en reset las salidas y running estan en 0
+[PASS] con enable = 0 las salidas siguen en 0
+[PASS] running sube al habilitar
+[PASS] freq_sel=00 (100 kHz), m=0: periodo 1000 ciclos (esperado 1000)
+[PASS] freq_sel=00 (100 kHz), m=0: pierna A abajo encendida 481 ciclos (esperado 481)
+[PASS] freq_sel=00 (100 kHz), m=0: pierna B abajo encendida 481 ciclos (esperado 481)
+[PASS] freq_sel=01 (80 kHz), m=0: periodo 1250 ciclos (esperado 1250)
+[PASS] freq_sel=01 (80 kHz), m=0: pierna A abajo encendida 607 ciclos (esperado 607)
+[PASS] freq_sel=01 (80 kHz), m=0: pierna B abajo encendida 607 ciclos (esperado 607)
+[PASS] freq_sel=10 (125 kHz), m=0: periodo 800 ciclos (esperado 800)
+[PASS] freq_sel=10 (125 kHz), m=0: pierna A abajo encendida 381 ciclos (esperado 381)
+[PASS] freq_sel=10 (125 kHz), m=0: pierna B abajo encendida 381 ciclos (esperado 381)
+[PASS] freq_sel=11 se toma como 00: periodo 1000 ciclos (esperado 1000)
+[PASS] freq_sel=11 se toma como 00: pierna A abajo encendida 481 ciclos (esperado 481)
+[PASS] freq_sel=11 se toma como 00: pierna B abajo encendida 481 ciclos (esperado 481)
+[PASS] m=+0,5: periodo 1000 ciclos (esperado 1000)
+[PASS] m=+0,5: pierna A abajo encendida 231 ciclos (esperado 231)
+[PASS] m=+0,5: pierna B abajo encendida 731 ciclos (esperado 731)
+[PASS] m=-0,5: periodo 1000 ciclos (esperado 1000)
+[PASS] m=-0,5: pierna A abajo encendida 731 ciclos (esperado 731)
+[PASS] m=-0,5: pierna B abajo encendida 231 ciclos (esperado 231)
+[PASS] m=+M_MAX: periodo 1000 ciclos (esperado 1000)
+[PASS] m=+M_MAX: pierna A abajo encendida 7 ciclos (esperado 7)
+[PASS] m=+M_MAX: pierna B abajo encendida 957 ciclos (esperado 957)
+[PASS] m=-M_MAX: periodo 1000 ciclos (esperado 1000)
+[PASS] m=-M_MAX: pierna A abajo encendida 957 ciclos (esperado 957)
+[PASS] m=-M_MAX: pierna B abajo encendida 7 ciclos (esperado 7)
+[PASS] m=-M_MAX a 125 kHz: periodo 800 ciclos (esperado 800)
+[PASS] m=-M_MAX a 125 kHz: pierna A abajo encendida 761 ciclos (esperado 761)
+[PASS] m=-M_MAX a 125 kHz: pierna B abajo encendida 3 ciclos (esperado 3)
+[PASS] dead_time=10 ciclos: periodo 1000 ciclos (esperado 1000)
+[PASS] dead_time=10 ciclos: pierna A abajo encendida 491 ciclos (esperado 491)
+[PASS] dead_time=10 ciclos: pierna B abajo encendida 491 ciclos (esperado 491)
+[PASS] dead_time=50 ciclos: periodo 1000 ciclos (esperado 1000)
+[PASS] dead_time=50 ciclos: pierna A abajo encendida 451 ciclos (esperado 451)
+[PASS] dead_time=50 ciclos: pierna B abajo encendida 451 ciclos (esperado 451)
+[PASS] dead_time=255 ciclos (maximo): periodo 1000 ciclos (esperado 1000)
+[PASS] dead_time=255 ciclos (maximo): pierna A abajo encendida 246 ciclos (esperado 246)
+[PASS] dead_time=255 ciclos (maximo): pierna B abajo encendida 246 ciclos (esperado 246)
+[PASS] dead_time vuelve a 20: periodo 1000 ciclos (esperado 1000)
+[PASS] dead_time vuelve a 20: pierna A abajo encendida 481 ciclos (esperado 481)
+[PASS] dead_time vuelve a 20: pierna B abajo encendida 481 ciclos (esperado 481)
+[PASS] cambio de duty a mitad de periodo: el periodo en curso sigue con m=0 (481 ciclos)
+[PASS] cambio de duty a mitad de periodo: el siguiente usa m=0,5 (231 ciclos)
+[PASS] cambio de freq_sel a mitad de periodo: el periodo en curso dura 1000 (esperado 1000)
+[PASS] cambio de freq_sel a mitad de periodo: el siguiente dura 1250 (esperado 1250)
+[PASS] enable 1 -> 0: las 4 compuertas se apagan en el siguiente ciclo
+[PASS] enable 1 -> 0: running baja
+[PASS] con enable = 0 no hay pulsos ni disparos
+[PASS] se vuelve a habilitar: periodo 1000 ciclos (esperado 1000)
+[PASS] se vuelve a habilitar: pierna A abajo encendida 481 ciclos (esperado 481)
+[PASS] se vuelve a habilitar: pierna B abajo encendida 481 ciclos (esperado 481)
+[PASS] reset a mitad de periodo apaga todo
+[PASS] despues del reset vuelve a funcionar: periodo 1000 ciclos (esperado 1000)
+[PASS] despues del reset vuelve a funcionar: pierna A abajo encendida 481 ciclos (esperado 481)
+[PASS] despues del reset vuelve a funcionar: pierna B abajo encendida 481 ciclos (esperado 481)
+[PASS] pierna A nunca tuvo los dos transistores encendidos (0 ciclos con solape)
+[PASS] pierna B nunca tuvo los dos transistores encendidos (0 ciclos con solape)
+[PASS] siempre se respeto el tiempo muerto (0 violaciones)
+[PASS] pwm_trigger_o siempre dura un ciclo
+
+==============================================
+ tb_pwm_core: 60 pruebas, 0 fallas
+ RESULTADO: PASA
+==============================================
+$finish called at time : 564280 ns : File "C:/p4/sim_final/tb_pwm_core.sv" Line 249
+exit
+INFO: [Common 17-206] Exiting xsim at Thu Nov 19 12:57:21 2026...

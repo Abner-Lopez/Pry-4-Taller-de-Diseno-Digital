@@ -63,8 +63,9 @@ Para esta simulación `pwm_axi` se implementa solo, como módulo superior, con l
 
 | Resultado | Valor | Fuente |
 |-----------|-------|--------|
-| Simulación post-implementación temporizada | 35 pruebas, 0 fallas (versión anterior del testbench, sin la prueba del disparo) | `docs/informe/reportes/resultado_tb_pwm_axi_postimpl.log` (2 de noviembre de 2026) |
-| WNS / WHS de `pwm_axi` implementado | 3,760 ns / 0,171 ns | `docs/informe/reportes/timing_pwm_axi_impl.rpt` |
+| Simulación RTL (xsim 2025.2) | 37 pruebas, 0 fallas | `docs/informe/reportes/resultado_tb_pwm_axi.log` (19 de noviembre de 2026) |
+| Simulación post-implementación temporizada | 37 pruebas, 0 fallas | `docs/informe/reportes/resultado_tb_pwm_axi_postimpl.log` (19 de noviembre de 2026) |
+| WNS / WHS de `pwm_axi` implementado | 3,760 ns / 0,171 ns | `docs/informe/reportes/timing_pwm_axi_impl.rpt` (19 de noviembre de 2026) |
 
 En la post-implementación el tiempo muerto se comprueba solo como "sin solape": `tb_pwm_axi` no mide el ancho de cada tiempo muerto (eso lo hace `tb_pwm_core` en RTL).
 
