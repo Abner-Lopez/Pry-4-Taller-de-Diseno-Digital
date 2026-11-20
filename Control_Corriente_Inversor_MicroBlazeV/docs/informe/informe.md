@@ -492,7 +492,7 @@ El $m$ pico escala 1 : 2,5 : 5 igual que la referencia, pero queda entre 2 y 3 %
 
 ### 11.4 Exportación
 
-En todas las exportaciones llegaron las 2000 muestras, con `n` seguido de 0 a 1999, e `iref` cruza por cero cada 200 muestras (400 muestras × 50 µs = 20 ms, o sea 50 Hz). La exportación son unas 2000 líneas de unos 18 caracteres, unos 36 KB a 115 200 baud (≈ 11,5 KB/s), así que dura unos 3 s. Durante ese tiempo el lazo sigue cada 50 µs, como mostró la medición de la ISR.
+En todas las exportaciones llegaron las 2000 muestras, con `n` seguido de 0 a 1999, e `iref` cruza por cero cada 200 muestras (400 muestras × 50 µs = 20 ms, o sea 50 Hz). La exportación son unas 2000 líneas de unos 20 caracteres, unos 40 KB a 115 200 baud (≈ 11,5 KB/s), así que dura unos 3,5 s. Durante ese tiempo el lazo sigue cada 50 µs, como mostró la medición de la ISR.
 
 ### 11.5 Integración con el puente H
 
@@ -561,7 +561,7 @@ La pérdida de tensión por el tiempo muerto es de unos $2\,t_{muerto}\,f_{sw}\,
 - El lazo no se cerró con la corriente real: la salida del ACS712 todavía no está llevada al rango de 0 a 1 V del XADC. Con el puente se probó la conmutación, pero no hay mediciones de corriente con la FPGA.
 - Las pruebas de lazo cerrado (planta simulada y emulador) se hicieron con la carga anterior de 10,3 Ω.
 - El jitter se midió con persistencia en una ventana de 500 ns que quedó llena, así que el valor es una cota inferior.
-- Mientras se exporta, la ISR no guarda muestras. El bloque exportado es continuo, pero los 3 s de la exportación no quedan registrados.
+- Mientras se exporta, la ISR no guarda muestras. El bloque exportado es continuo, pero los 3,5 s de la exportación no quedan registrados.
 - El PR no tiene antiwindup: si $m$ se satura, la parte resonante sigue integrando.
 - En el modo emulador el PWM queda encendido con $m = 0$ aun con el lazo apagado, porque el RC necesita la conmutación para dar el offset. Por eso ese modo no se usa con el puente conectado.
 

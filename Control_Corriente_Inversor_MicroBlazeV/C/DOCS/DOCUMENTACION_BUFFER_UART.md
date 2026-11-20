@@ -107,7 +107,7 @@ Se midió con el pin de prueba: durante la exportación la ISR sigue cada 50 µs
 # 7. Consideraciones de diseño
 
 - Las 2000 muestras que se exportan son seguidas y no les falta ninguna. Las muestras que ocurren mientras se exporta no se guardan, porque el buffer está congelado.
-- La exportación dura unos 3 s: son unas 2000 líneas de unos 18 caracteres (≈ 36 KB) a 115 200 baud (≈ 11,5 KB/s).
+- La exportación dura unos 3,5 s: son unas 2000 líneas de unos 20 caracteres (≈ 40 KB) a 115 200 baud (≈ 11,5 KB/s).
 - Mientras se exporta, `main` está dentro de `exportar()`. En cada línea se lee SW0 y, si se bajó, se apaga el lazo, así que se puede apagar aunque se esté exportando. Los demás switches se aplican cuando termina la exportación.
 - Después de exportar el buffer queda vacío. Si se presiona BTNC enseguida, se envían solo las muestras que se guardaron desde entonces.
 
@@ -115,7 +115,7 @@ Se midió con el pin de prueba: durante la exportación la ISR sigue cada 50 µs
 
 # 8. Validación
 
-Se exportó el buffer con el lazo abierto y con el lazo cerrado, con las tres amplitudes. En todos los casos llegaron 2000 muestras con `n` de 0 a 1999 sin saltos, y `iref` cruza por cero cada 200 muestras (50 Hz). Los resultados completos están en el informe.
+Se exportó el buffer con el lazo apagado y con el lazo cerrado, con las tres amplitudes. En todos los casos llegaron 2000 muestras con `n` de 0 a 1999 sin saltos, y `iref` cruza por cero cada 200 muestras (50 Hz). Los resultados completos están en el informe.
 
 ---
 

@@ -138,8 +138,8 @@ El valor inicial es 0,47 V.
 | Prueba | Resultado |
 |--------|-----------|
 | Tensión DC con los dos disparos | Se leyó la tensión con el inicio por software y con `pwm_trigger_o`. |
-| Emulador RC con el lazo apagado (prueba 4) | `i = 0 ± 3 mA`, o sea que el offset se aprendió bien. |
-| Emulador RC con el lazo cerrado (prueba 5) | La amplitud del seno medida con el osciloscopio en el nodo del RC coincide, con unos 5 mV de diferencia, con la que se calcula del ciclo de trabajo exportado. |
+| Emulador RC con el lazo apagado (prueba 4 del informe) | `i = 0 ± 3 mA`, o sea que el offset se aprendió bien. |
+| Emulador RC con el lazo cerrado (prueba 6 del informe) | La amplitud del seno medida con el osciloscopio en el nodo del RC coincide, con 4 a 7 mV de diferencia, con la que se calcula del ciclo de trabajo exportado. |
 
 ---
 

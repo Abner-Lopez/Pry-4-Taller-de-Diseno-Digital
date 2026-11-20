@@ -272,9 +272,10 @@ Las pruebas se hicieron en la Nexys 4 sin la etapa de potencia. Las tablas compl
 | Prueba | Resultado |
 |--------|-----------|
 | Periodo del lazo (pin JA8, osciloscopio) | 50,0 µs |
-| Jitter pico a pico del periodo | Al menos 500 ns (cota inferior, la franja ocupó toda la ventana del osciloscopio). |
+| Variación del flanco del pin de prueba | Al menos 500 ns (la franja ocupó toda la ventana del osciloscopio). |
+| Latencia de entrada a la ISR | 289 a 324 ciclos (2,89 a 3,24 µs), con el contador del Timer durante unos 5,6 min |
 | Duración de la ISR | ≈ 10,75 µs en operación normal (21,5 % de Ts) y 8,57 µs mientras se exporta |
-| Lazo abierto con el emulador | `iref` de ±199, ±499 y ±999 mA a 50 Hz; `i = 0 ± 3 mA` |
+| Emulador con el lazo apagado | `iref` de ±199, ±499 y ±999 mA a 50 Hz; `i = 0 ± 3 mA` |
 | Lazo cerrado con el emulador | Error RMS de 1,9 a 2,0 mA y error máximo de 6 a 7 mA en las tres amplitudes |
 
 Estas pruebas validan la cadena digital completa. El desempeño del PR con la carga RL real se comprueba en la integración con la etapa de potencia.
