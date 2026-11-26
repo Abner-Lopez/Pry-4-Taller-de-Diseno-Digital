@@ -14,7 +14,7 @@
 
 Se construyó en la Nexys 4 [16] un sistema embebido con un MicroBlaze V a 100 MHz que regula la corriente de un inversor monofásico en puente H. El procesador ejecuta en C un regulador proporcional-resonante discreto dentro de una rutina de interrupción cada 50 µs. Un periférico PWM propio, con interfaz AXI4-Lite, genera la modulación unipolar de las cuatro compuertas con tiempo muerto configurable y entrega el disparo que sincroniza el XADC con el valle de la portadora. Las muestras se guardan en un buffer circular y se exportan por la UART a la PC al presionar un botón, sin detener el lazo.
 
-El PWM pasa sus dos testbenches autoverificables en Vivado 2025.2: `tb_pwm_core` con 60 pruebas y `tb_pwm_axi` con 37, este último también en la simulación post-implementación temporizada. El sistema completo cumple timing a 100 MHz. En la tarjeta se midió un periodo de lazo de 50,0 µs con la ISR ocupando el 21,5 % del periodo, y la cadena PWM → XADC → PR → `duty_ref` funcionó en lazo cerrado con una planta simulada y con un emulador RC. Con el puente H, alimentado a 18 V y con una carga de 4,7 Ω y 197 µH, se logró la conmutación correcta de las dos piernas después de corregir la alimentación lógica de los drivers. Con el sensor de corriente conectado al XADC se cerró el lazo con la corriente real: la corriente en la carga siguió referencias sinusoidales de 50 Hz de 0,2 A, 0,5 A y 1,0 A pico.
+El PWM pasa sus dos testbenches autoverificables en Vivado 2025.2: `tb_pwm_core` con 60 pruebas y `tb_pwm_axi` con 37, este último también en la simulación post-implementación temporizada. El sistema completo cumple timing a 100 MHz. En la tarjeta se midió un periodo de lazo de 50,0 µs con la ISR ocupando el 21,5 % del periodo, y la cadena PWM → XADC → PR → `duty_ref` funcionó en lazo cerrado con una planta simulada y con un emulador RC. Con el puente H, alimentado a 18 V y con una carga de 4,7 Ω y 197 µH, se logró la conmutación correcta de las dos piernas después de corregir la alimentación lógica de los drivers. Con el sensor de corriente conectado al XADC se cerró el lazo con la corriente real: la corriente en la carga siguió referencias sinusoidales de 50 Hz de 0,2 A, 0,5 A y 1,0 A pico. El sistema quedó completo y funcional: se cumplieron todos los objetivos del proyecto, desde el PWM verificado en simulación hasta el control de la corriente real del puente H.
 
 ---
 
@@ -464,15 +464,15 @@ Para seguir probando el puente sin depender del sensor ni del PR se agregó al p
 
 Con el puente H conmutando correctamente, se conectó la salida del sensor de corriente ACS712 [13], acondicionada al rango de entrada del XADC, y se cerró el lazo con la corriente real de la carga. Las condiciones fueron: bus de 18 V, VDD de los IR2110 en 3,3 V, carga de 4,7 Ω y 197 µH, PWM a 100 kHz, lazo en el modo normal (SW0 = 1) con el PR discreto y referencia sinusoidal de 50 Hz. Se probaron tres amplitudes de referencia, 0,2 A, 0,5 A y 1,0 A pico, y en cada una se exportó por la UART una ventana de 60 ms de la corriente medida, que contiene tres periodos de la señal.
 
-![lazo_real_0p2A](FIGURAS/lazo_real_0p2A.png)
+![lazo_real_0p2A](FIGURAS/Experimental_200mA.png)
 
 *Figura 19: corriente experimental con referencia de 0,2 A pico (R = 4,7 Ω).*
 
-![lazo_real_0p5A](FIGURAS/lazo_real_0p5A.png)
+![lazo_real_0p5A](FIGURAS/Experimental_500mA.png)
 
 *Figura 20: corriente experimental con referencia de 0,5 A pico (R = 4,7 Ω).*
 
-![lazo_real_1p0A](FIGURAS/lazo_real_1p0A.png)
+![lazo_real_1p0A](FIGURAS/Experimental_1000mA.png)
 
 *Figura 21: corriente experimental con referencia de 1,0 A pico (R = 4,7 Ω).*
 
@@ -615,6 +615,7 @@ Respecto a las pruebas anteriores, aquí el error ya no se puede comparar con el
 
 ## 14. Conclusiones
 
+- El proyecto quedó terminado y el sistema funciona de punta a punta: el MicroBlaze V, el PWM propio, el XADC sincronizado, el PR discreto y la exportación por UART operan juntos sobre el puente H real, con la corriente de la carga siguiendo la referencia sinusoidal de 50 Hz.
 - Se cumplieron los objetivos del proyecto: el sistema embebido regula la corriente del inversor monofásico en lazo cerrado con la corriente real, con el PWM propio, el XADC sincronizado y el PR discreto ejecutándose cada 50 µs.
 - Dividir el trabajo entre hardware y software según los tiempos que necesita cada parte funcionó: el PWM y el XADC resuelven lo que pasa en nanosegundos, y el procesador tiene 39 µs libres de cada periodo de 50 µs.
 - Cargar los registros del PWM solo en el valle hace que el jitter de la ISR no deforme los pulsos; solo puede atrasar un periodo de conmutación la aplicación de un valor nuevo.
