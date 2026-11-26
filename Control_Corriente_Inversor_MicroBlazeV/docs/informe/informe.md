@@ -14,7 +14,7 @@
 
 Se construyó en la Nexys 4 [16] un sistema embebido con un MicroBlaze V a 100 MHz que regula la corriente de un inversor monofásico en puente H. El procesador ejecuta en C un regulador proporcional-resonante discreto dentro de una rutina de interrupción cada 50 µs. Un periférico PWM propio, con interfaz AXI4-Lite, genera la modulación unipolar de las cuatro compuertas con tiempo muerto configurable y entrega el disparo que sincroniza el XADC con el valle de la portadora. Las muestras se guardan en un buffer circular y se exportan por la UART a la PC al presionar un botón, sin detener el lazo.
 
-El PWM pasa sus dos testbenches autoverificables en Vivado 2025.2: `tb_pwm_core` con 60 pruebas y `tb_pwm_axi` con 37, este último también en la simulación post-implementación temporizada. El sistema completo cumple timing a 100 MHz. En la tarjeta se midió un periodo de lazo de 50,0 µs con la ISR ocupando el 21,5 % del periodo, y la cadena PWM → XADC → PR → `duty_ref` funcionó en lazo cerrado con una planta simulada y con un emulador RC. Con el puente H se logró la conmutación correcta de las dos piernas después de corregir la alimentación lógica de los drivers; el lazo con la corriente real no se cerró.
+El PWM pasa sus dos testbenches autoverificables en Vivado 2025.2: `tb_pwm_core` con 60 pruebas y `tb_pwm_axi` con 37, este último también en la simulación post-implementación temporizada. El sistema completo cumple timing a 100 MHz. En la tarjeta se midió un periodo de lazo de 50,0 µs con la ISR ocupando el 21,5 % del periodo, y la cadena PWM → XADC → PR → `duty_ref` funcionó en lazo cerrado con una planta simulada y con un emulador RC. Con el puente H, alimentado a 18 V y con una carga de 4,7 Ω y 197 µH, se logró la conmutación correcta de las dos piernas después de corregir la alimentación lógica de los drivers. Con el sensor de corriente conectado al XADC se cerró el lazo con la corriente real: la corriente en la carga siguió referencias sinusoidales de 50 Hz de 0,2 A, 0,5 A y 1,0 A pico.
 
 ---
 
@@ -42,7 +42,7 @@ El PWM pasa sus dos testbenches autoverificables en Vivado 2025.2: `tb_pwm_core`
 
 En este proyecto se construyó un sistema embebido en la Nexys 4 (Artix-7) que regula la corriente de un inversor monofásico en puente H. El procesador es un MicroBlaze V [3], [4] a 100 MHz que ejecuta en C un regulador proporcional-resonante (PR) cada 50 µs. Los periféricos se encargan de lo que necesita tiempos exactos: un PWM unipolar propio, con interfaz AXI4-Lite y tiempo muerto configurable, genera las cuatro compuertas del puente; el XADC mide la corriente sincronizado con la portadora del PWM; y la UART exporta las muestras a la PC.
 
-El informe describe lo que se implementó y lo que se midió. El diseño completo, con los diagramas de niveles de la metodología de diseño modular [15], está en `docs/diseño/diseño.md`, y el detalle de cada módulo está en la carpeta `DOCS` de cada parte del repositorio.
+El informe describe lo que se implementó y lo que se midió, desde la verificación del PWM en simulación hasta el lazo cerrado con la corriente real del puente H. El diseño completo, con los diagramas de niveles de la metodología de diseño modular [15], está en `docs/diseño/diseño.md`, y el detalle de cada módulo está en la carpeta `DOCS` de cada parte del repositorio.
 
 ---
 
@@ -53,7 +53,7 @@ El informe describe lo que se implementó y lo que se midió. El diseño complet
 3. Implementar en C el regulador PR dentro de una rutina de interrupción periódica, con la ecuación entregada por el curso de potencia.
 4. Guardar las muestras en un buffer circular y exportarlas por la UART sin afectar el lazo.
 5. Verificar el PWM con testbenches autoverificables, en RTL y post-implementación, y medir el periodo y el jitter del lazo en la tarjeta.
-6. Integrar la parte digital con la etapa de potencia.
+6. Integrar la parte digital con la etapa de potencia y cerrar el lazo de corriente con la corriente real de la carga.
 
 ---
 
@@ -206,22 +206,22 @@ La etapa de potencia la diseñó el curso EL4201. Los datos que usa la parte dig
 | Alimentación del puente | $V_{dc} = 18$ V |
 | Transistores | IRFZ44N [12], dos por pierna |
 | Driver | IR2110 [11], uno por pierna |
-| Carga | $R \approx 5{,}0\ \Omega$ (4,7 Ω más 0,3 Ω de las bobinas), $L \approx 197\ \mu H$ |
-| Constante de tiempo | $\tau = L/R \approx 39{,}4\ \mu s$ |
+| Carga | $R = 4{,}7\ \Omega$, $L \approx 197\ \mu H$ |
+| Constante de tiempo | $\tau = L/R \approx 41{,}9\ \mu s$ |
 | Sensor de corriente | ACS712 [13] |
 | Frecuencia de conmutación | 100 kHz nominal |
 
 A 50 Hz la reactancia es de unos 62 mΩ, así que la carga se comporta casi como una resistencia. El índice de modulación necesario es $m = I_{pico}\,R / V_{dc}$:
 
-| $I_{pico}$ | $m$ con 5,0 Ω | $m$ con 10,3 Ω |
+| $I_{pico}$ | $m$ con 4,7 Ω | $m$ con 10,3 Ω |
 |---|---|---|
-| 0,2 A | 0,056 | 0,114 |
-| 0,5 A | 0,139 | 0,286 |
-| 1,0 A | 0,278 | 0,572 |
+| 0,2 A | 0,052 | 0,114 |
+| 0,5 A | 0,131 | 0,286 |
+| 1,0 A | 0,261 | 0,572 |
 
-La carga cambió durante el proyecto: al inicio era de 10,3 Ω y 198 µH, y se bajó a 5,0 Ω y 197 µH. Las pruebas 5 y 6 de la sección 10 se hicieron con la carga anterior, así que el modelo de la planta simulada y la ganancia del emulador estaban calculados para 10,3 Ω; la última columna es la que corresponde a esas pruebas. El software actual ya usa la carga de 5,0 Ω.
+La carga cambió durante el proyecto: al inicio era de 10,3 Ω y 198 µH, después se bajó a unos 5,0 Ω y finalmente quedó en 4,7 Ω y 197 µH, que es la que se usó en las pruebas con el puente. Las pruebas 5 y 6 de la sección 10 se hicieron con la carga inicial, así que el modelo de la planta simulada y la ganancia del emulador estaban calculados para 10,3 Ω; la última columna es la que corresponde a esas pruebas. La prueba 8, con la corriente real, usa la carga de 4,7 Ω.
 
-En los dos casos el valor más alto queda por debajo del límite del software (0,8) y del hardware (0,95). El IR2110 no genera tiempo muerto, así que todo el tiempo muerto lo pone el PWM.
+En todos los casos el valor más alto queda por debajo del límite del software (0,8) y del hardware (0,95). El IR2110 no genera tiempo muerto, así que todo el tiempo muerto lo pone el PWM.
 
 ---
 
@@ -313,7 +313,7 @@ Los 16 tiles de BRAM son los 64 KB de memoria local (cada tile guarda 4 KB). El 
 
 ## 10. Pruebas en la tarjeta
 
-Las pruebas 1 a 6 se hicieron en la Nexys 4 con el sistema completo (MicroBlaze V a 100 MHz, PWM, XADC, Timer, UART y GPIO), sin conectar el puente H. La prueba 7 es la integración con el puente. Las señales se midieron con un osciloscopio Agilent DSO-X 2002A, con los canales digitales y el canal analógico 1:
+Las pruebas 1 a 6 se hicieron en la Nexys 4 con el sistema completo (MicroBlaze V a 100 MHz, PWM, XADC, Timer, UART y GPIO), sin conectar el puente H. La prueba 7 es la integración del PWM con el puente y la prueba 8 cierra el lazo de corriente con la corriente real de la carga. Las señales de las pruebas 1 a 6 se midieron con un osciloscopio Agilent DSO-X 2002A, con los canales digitales y el canal analógico 1:
 
 | Canal | Señal |
 |---|---|
@@ -432,9 +432,7 @@ Con SW14 = 1, SW15 = 1, SW0 = 1 y 100 kHz, con la ganancia del emulador calculad
 
 ### 10.7 Prueba 7: integración con el puente H
 
-El puente tiene dos IR2110 y cuatro IRFZ44N, con el bus de 18 V y la carga de 5,0 Ω y 197 µH. Las cuatro salidas de la FPGA (JA1 a JA4) van a HIN y LIN de los drivers. En las capturas, CH1 y CH2 son los puntos medios de las dos piernas medidos contra la tierra de la fuente, a 10 V/div, y M es la resta CH1 − CH2, o sea la tensión en la carga. Estas capturas se tomaron con un osciloscopio GW Instek GDS-1202B.
-
-El sensor todavía no está conectado al XADC, así que en esta prueba el lazo no se cerró con la corriente real.
+El puente tiene dos IR2110 y cuatro IRFZ44N, con el bus de 18 V y la carga de 4,7 Ω y 197 µH. Las cuatro salidas de la FPGA (JA1 a JA4) van a HIN y LIN de los drivers. En las capturas, CH1 y CH2 son los puntos medios de las dos piernas medidos contra la tierra de la fuente, a 10 V/div, y M es la resta CH1 − CH2, o sea la tensión en la carga. Estas capturas se tomaron con un osciloscopio GW Instek GDS-1202B. En esta prueba el objetivo fue conseguir que el puente conmutara correctamente con las señales de la FPGA; el cierre del lazo con la corriente real se presenta en la prueba 8.
 
 **Referencia con el Arduino.** Antes de conectar la FPGA, el equipo de potencia probó el puente con un Arduino Leonardo: SPWM unipolar a 20 kHz, tiempo muerto de 1 µs y $m = 0{,}5$ fijo, con la lógica del IR2110 (VDD) a 5 V.
 
@@ -462,6 +460,30 @@ Las dos piernas conmutan completas y limpias, con 16,8 V de amplitud y pulsos de
 
 Para seguir probando el puente sin depender del sensor ni del PR se agregó al programa un modo de lazo abierto (SW13): $m$ es un seno de 50 Hz con amplitud fija de 0,1, 0,25 o 0,5, o un valor constante con SW12.
 
+### 10.8 Prueba 8: lazo cerrado con la corriente real
+
+Con el puente H conmutando correctamente, se conectó la salida del sensor de corriente ACS712 [13], acondicionada al rango de entrada del XADC, y se cerró el lazo con la corriente real de la carga. Las condiciones fueron: bus de 18 V, VDD de los IR2110 en 3,3 V, carga de 4,7 Ω y 197 µH, PWM a 100 kHz, lazo en el modo normal (SW0 = 1) con el PR discreto y referencia sinusoidal de 50 Hz. Se probaron tres amplitudes de referencia, 0,2 A, 0,5 A y 1,0 A pico, y en cada una se exportó por la UART una ventana de 60 ms de la corriente medida, que contiene tres periodos de la señal.
+
+![lazo_real_0p2A](FIGURAS/lazo_real_0p2A.png)
+
+*Figura 19: corriente experimental con referencia de 0,2 A pico (R = 4,7 Ω).*
+
+![lazo_real_0p5A](FIGURAS/lazo_real_0p5A.png)
+
+*Figura 20: corriente experimental con referencia de 0,5 A pico (R = 4,7 Ω).*
+
+![lazo_real_1p0A](FIGURAS/lazo_real_1p0A.png)
+
+*Figura 21: corriente experimental con referencia de 1,0 A pico (R = 4,7 Ω).*
+
+Lectura de las gráficas (valores aproximados):
+
+| Referencia | Periodos en 60 ms | Pico positivo | Pico negativo | Forma de la señal |
+|---|---|---|---|---|
+| 0,2 A | 3 | ≈ 0,22 A | ≈ −0,22 A | Seno de 50 Hz con escalones de unos 0,04 A y rizado visible en los picos |
+| 0,5 A | 3 | ≈ 0,5 A | ≈ −0,5 A | Seno de 50 Hz con escalones y algunos valores aislados que llegan a ±0,7 A |
+| 1,0 A | 3 | ≈ 1,0 a 1,1 A | ≈ −1,0 a −1,2 A | Seno de 50 Hz con escalones pequeños y rizado en los picos |
+
 ---
 
 ## 11. Análisis de resultados
@@ -482,7 +504,7 @@ El contador del Timer da la variación de la entrada a la rutina: la latencia fu
 
 La fase entre el Timer y el PWM depende del momento en que se habilita el PWM. A 100 kHz y 80 kHz el periodo del lazo es un número entero de periodos de conmutación (5 y 4), así que esa fase queda fija mientras el PWM esté encendido. A 125 kHz son 6,25 periodos y la posición de la ISR respecto al disparo cambia de una interrupción a otra, por eso la antigüedad de la muestra varía entre 0 y 8 µs.
 
-### 11.3 Lazo de control
+### 11.3 Lazo de control con planta simulada y emulador
 
 Con la planta simulada, el $m$ pico de 0,572 es igual al teórico de la sección 7 para 1,0 A con la carga de 10,3 Ω, porque el modelo usa los mismos $R$ y $V_{dc}$. El error es de 0,5 mA RMS: con una planta sin ruido el PR lleva el error casi a cero, como se espera de un regulador resonante a 50 Hz.
 
@@ -500,7 +522,7 @@ En todas las exportaciones llegaron las 2000 muestras, con `n` seguido de 0 a 19
 
 Con VDD tomado de la FPGA hay que cuidar el orden de encendido: primero la Nexys 4 programada, después los 15 V de los drivers y al final el bus. Si la FPGA se apaga o se reprograma con el bus encendido, las entradas de los drivers quedan sin control, y el IR2110 no impide que HIN y LIN estén en alto a la vez.
 
-**Las dos piernas en alto al mismo tiempo.** En la modulación unipolar las dos piernas usan la misma portadora con $+m$ y $-m$. Con $m = 0$ las dos tienen el mismo ciclo de trabajo, sus pulsos coinciden y $V_{AB} = 0$. Que conduzcan a la vez los dos transistores de arriba es el estado cero de la unipolar y no es un cortocircuito, porque están en piernas distintas. La tensión en la carga es la diferencia entre las piernas: pulsos de ancho $m\,T_{sw}/2$ en cada medio periodo. Con $m = 0{,}056$, que es lo que pide la referencia de 0,2 A con la carga de 5 Ω, esos pulsos son de unos 0,28 µs y no se distinguen a 5 µs/div. Por eso con $m$ cercano a cero no hay corriente aunque el puente conmute bien.
+**Las dos piernas en alto al mismo tiempo.** En la modulación unipolar las dos piernas usan la misma portadora con $+m$ y $-m$. Con $m = 0$ las dos tienen el mismo ciclo de trabajo, sus pulsos coinciden y $V_{AB} = 0$. Que conduzcan a la vez los dos transistores de arriba es el estado cero de la unipolar y no es un cortocircuito, porque están en piernas distintas. La tensión en la carga es la diferencia entre las piernas: pulsos de ancho $m\,T_{sw}/2$ en cada medio periodo. Con $m = 0{,}052$, que es lo que pide la referencia de 0,2 A con la carga de 4,7 Ω, esos pulsos son de unos 0,26 µs y no se distinguen a 5 µs/div. Por eso con $m$ cercano a cero no hay corriente aunque el puente conmute bien.
 
 **Tiempo muerto con los IRFZ44N.** Con $R_G = 12\ \Omega$ la hoja de datos [12] da $t_{d(off)} = 44$ ns, $t_f = 45$ ns y $t_{d(on)} = 12$ ns. El transistor que se apaga tarda unos 89 ns y el que se enciende empieza a conducir a los 12 ns, así que el mínimo es de unos 77 ns. El IR2110 apaga unos 25 ns antes de lo que enciende (94 ns frente a 120 ns típicos), lo que suma a favor. Los 200 ns del PWM dan más del doble del mínimo típico, siempre que la resistencia de compuerta sea de ese orden; con una resistencia mucho mayor los tiempos crecen en proporción y habría que subir `dead_time`.
 
@@ -514,11 +536,23 @@ Con VDD tomado de la FPGA hay que cuidar el orden de encendido: primero la Nexys
 | $m$ | 0,5 fijo | Del PR, o fijo en lazo abierto |
 | VDD del IR2110 | 5 V | 3,3 V |
 
-La pérdida de tensión por el tiempo muerto es de unos $2\,t_{muerto}\,f_{sw}\,V_{dc}$, y da lo mismo en los dos: $2 \cdot 1\ \mu s \cdot 20\ \text{kHz} \cdot 18\ \text{V} = 2 \cdot 200\ \text{ns} \cdot 100\ \text{kHz} \cdot 18\ \text{V} \approx 0{,}72$ V. A 0,2 A con 5 Ω solo se necesita 1 V, así que en lazo abierto la corriente a esa amplitud sale mucho menor que la referencia y deformada en los cruces por cero; en lazo cerrado el PR lo compensa.
+La pérdida de tensión por el tiempo muerto es de unos $2\,t_{muerto}\,f_{sw}\,V_{dc}$, y da lo mismo en los dos: $2 \cdot 1\ \mu s \cdot 20\ \text{kHz} \cdot 18\ \text{V} = 2 \cdot 200\ \text{ns} \cdot 100\ \text{kHz} \cdot 18\ \text{V} \approx 0{,}72$ V. A 0,2 A con 4,7 Ω se necesitan 0,94 V, así que en lazo abierto la corriente a esa amplitud sale mucho menor que la referencia y deformada en los cruces por cero; en lazo cerrado el PR lo compensa, como se comprobó en la prueba 8.
 
 **Ringing en los flancos.** Los picos en cada conmutación vienen de la inductancia de los cables del puente, que resuena con las capacitancias de los transistores. Con 18 V no ponen en riesgo a los IRFZ44N (55 V), pero agregan ruido a la medición.
 
-### 11.6 Correspondencia con el plan de validación
+### 11.6 Lazo cerrado con la corriente real
+
+En las tres amplitudes la corriente medida es una senoide de 50 Hz: en cada ventana de 60 ms caben tres periodos completos, y los picos y los cruces por cero se repiten con la misma separación de unos 20 ms. Eso confirma que el PR, con la resonancia en 50 Hz, hace que la corriente real siga la referencia sinusoidal, y que la cadena completa PWM → puente H → sensor → XADC → ISR → PR → `duty_ref` funciona con la etapa de potencia conectada.
+
+Las amplitudes también concuerdan con las referencias. Con 0,5 A el pico queda en unos 0,5 A, con 1,0 A entre 1,0 y 1,1 A, y con 0,2 A en unos 0,22 A. La diferencia en 0,2 A es de un escalón de la medición y no un error de ganancia del lazo, como se explica abajo. Además, el índice de modulación necesario con la carga de 4,7 Ω (0,052, 0,131 y 0,261 según la sección 7) es pequeño y queda lejos de las saturaciones del software (0,8) y del hardware (0,95), así que el lazo trabajó sin saturar.
+
+La forma de escalera de las curvas viene de la resolución de la cadena de medición de la corriente, es decir, del sensor, su acondicionamiento y la conversión del XADC. Cada escalón es la mínima variación que el controlador puede ver. Se nota más en 0,2 A porque ahí el escalón (unos 0,04 A) es una fracción mayor de la amplitud, y menos en 1,0 A. En los picos, donde la señal cambia más despacio, la corriente oscila entre dos o tres niveles vecinos: el PR corrige cada vez que la medición cambia de nivel, de modo que la corriente real varía dentro de un escalón alrededor del valor pedido. En el caso de 0,2 A esa oscilación abarca casi todo el pico, y por eso el máximo medido pasa de 0,2 A a 0,22 A.
+
+En la captura de 0,5 A se ven algunos valores aislados, de una sola muestra, que llegan a ±0,7 A. No siguen la forma de la señal ni se repiten en los periodos siguientes, y son compatibles con ruido de conmutación en la medición, que el muestreo en el valle de la portadora reduce pero no elimina. Como el PR actúa sobre la señal completa, esas muestras sueltas no desvían el seguimiento de la senoide.
+
+Respecto a las pruebas anteriores, aquí el error ya no se puede comparar con el de 2 mA del emulador, porque la medición del sensor real tiene más ruido y menos resolución que el nodo del RC. Aun así, el resultado es el esperado: el controlador diseñado y verificado sobre la planta simulada y sobre el emulador funciona sin cambios con la planta real, y el comportamiento observado coincide con lo que dio el emulador, con amplitudes proporcionales a la referencia y sin pérdida de seguimiento al subir la corriente.
+
+### 11.7 Correspondencia con el plan de validación
 
 | Prueba del plan (diseño, sección 11) | Dónde está el resultado |
 |---|---|
@@ -528,11 +562,11 @@ La pérdida de tensión por el tiempo muerto es de unos $2\,t_{muerto}\,f_{sw}\,
 | 4. Síntesis e implementación | Sección 9 |
 | 5. Registros del PWM desde C | Pruebas 1 y 2: las tres frecuencias, el tiempo muerto y el apagado se configuraron escribiendo los registros desde C; `run=` en la terminal cambia con SW0 |
 | 6. Compuertas, tiempo muerto y disparo en los pines | Pruebas 1 y 2 |
-| 7. XADC con los dos disparos | Con `pwm_trigger_o`: pruebas 4 y 6, con el emulador. Por software, con el PWM apagado: en la terminal, 6 725 076 muestras nuevas en 6 725 077 interrupciones, y `sin_dato = 1`, que es la primera interrupción después del arranque |
+| 7. XADC con los dos disparos | Con `pwm_trigger_o`: pruebas 4, 6 y 8. Por software, con el PWM apagado: en la terminal, 6 725 076 muestras nuevas en 6 725 077 interrupciones, y `sin_dato = 1`, que es la primera interrupción después del arranque |
 | 8. Lazo cerrado con planta simulada y emulador | Pruebas 5 y 6 |
-| 9. Exportación por UART | Pruebas 4 a 6 |
+| 9. Exportación por UART | Pruebas 4 a 6 y 8 |
 | 10. Periodo, duración de la ISR y jitter | Prueba 3 |
-| 11. Integración con la etapa de potencia | Prueba 7: el puente conmuta con la FPGA; el lazo con el sensor no se cerró |
+| 11. Integración con la etapa de potencia | Pruebas 7 y 8: el puente conmuta con la FPGA y el lazo se cerró con la corriente real del sensor |
 
 ---
 
@@ -542,8 +576,10 @@ La pérdida de tensión por el tiempo muerto es de unos $2\,t_{muerto}\,f_{sw}\,
 |---|---|---|---|
 | La prueba 9b de `tb_pwm_axi` fallaba en xsim (229 ciclos antes del disparo y 250 después) aunque el PWM estaba bien | Testbench | El conteo se hacía en un bloque aparte que corría en el mismo flanco que la tarea que espera el disparo, y el resultado dependía del orden de ejecución del simulador | Se cuentan los ciclos dentro de la tarea `medir_centro`, sin contar el ciclo del disparo. Pasa 37 de 37 en RTL y post-implementación |
 | Con la FPGA las piernas del puente conmutaban a medias y sin frecuencia estable | Integración | VDD de los IR2110 estaba en 5 V; el umbral de entrada queda en unos 3,2 V y las salidas de la FPGA son de 3,3 V | VDD se alimentó con los 3,3 V del Pmod y VSS con la tierra de la FPGA. Las piernas conmutaron completas (figura 18) |
-| Con el puente conmutando bien no había corriente en la carga | Interpretación | Con $m$ cercano a cero las dos piernas tienen el mismo pulso (estado cero de la unipolar) y la tensión en la carga son pulsos de menos de 0,3 µs | Se agregó el modo de lazo abierto (SW13 y SW12) para fijar $m$ sin depender del sensor ni del PR |
-| La carga cambió de 10,3 Ω a 5,0 Ω | Integración | Cambio en la etapa de potencia | Se recalcularon el modelo de la planta simulada, la ganancia del emulador y los $m$ esperados. Las pruebas 5 y 6 quedan con la carga anterior (sección 7) |
+| Con el puente conmutando bien no había corriente en la carga | Interpretación | Con $m$ cercano a cero las dos piernas tienen el mismo pulso (estado cero de la unipolar) y la tensión en la carga son pulsos de menos de 0,3 µs | Se agregó el modo de lazo abierto (SW13 y SW12) para fijar $m$ sin depender del sensor ni del PR, y después se cerró el lazo con la corriente real |
+| El lazo no se podía cerrar con la corriente real | Integración | La salida del ACS712 no estaba en el rango de entrada del XADC | Se acondicionó la salida del sensor al rango del XADC y se cerró el lazo (prueba 8) |
+| La carga cambió de 10,3 Ω a 5,0 Ω y luego a 4,7 Ω | Integración | Cambios en la etapa de potencia | Se recalcularon los $m$ esperados (sección 7) y el software usa la carga final de 4,7 Ω. Las pruebas 5 y 6 quedan con la carga inicial de 10,3 Ω |
+| La corriente medida tiene escalones y algunos valores aislados | Medición | Resolución de la cadena sensor, acondicionamiento y XADC, y ruido de conmutación | No impide el seguimiento de la referencia (sección 11.6); se deja como mejora el filtrado de la medición |
 
 ---
 
@@ -554,35 +590,39 @@ La pérdida de tensión por el tiempo muerto es de unos $2\,t_{muerto}\,f_{sw}\,
 - El sistema MicroBlaze V con todos sus periféricos funciona en la tarjeta a 100 MHz, con timing cerrado.
 - El PWM genera las tres frecuencias exactas, el tiempo muerto programado sin solape y el disparo en el valle, verificado en simulación RTL, post-implementación y con el osciloscopio.
 - La cadena digital completa (PWM → RC → XADC → ISR → PR → `duty_ref` → UART) funciona en lazo cerrado con un error del orden del ruido de la medición.
+- El lazo de corriente se cerró con la etapa de potencia real: con el puente H a 18 V y una carga de 4,7 Ω la corriente siguió referencias sinusoidales de 50 Hz de 0,2 A, 0,5 A y 1,0 A pico, sin saturar el controlador.
 - La exportación no afecta el lazo y entrega bloques completos de 2000 muestras.
 
 **Limitaciones.**
 
-- El lazo no se cerró con la corriente real: la salida del ACS712 todavía no está llevada al rango de 0 a 1 V del XADC. Con el puente se probó la conmutación, pero no hay mediciones de corriente con la FPGA.
-- Las pruebas de lazo cerrado (planta simulada y emulador) se hicieron con la carga anterior de 10,3 Ω.
-- El jitter se midió con persistencia en una ventana de 500 ns que quedó llena, así que el valor es una cota inferior.
+- La medición de la corriente real tiene escalones y algo de ruido, que se notan sobre todo con 0,2 A. El seguimiento se evaluó con las gráficas exportadas y no con un error RMS como en las pruebas con el emulador.
+- Las pruebas con la planta simulada y con el emulador (5 y 6) se hicieron con la carga inicial de 10,3 Ω.
+- El jitter se midió con persistencia en una ventana de 500 ns que quedó llena, así que el valor es una cota inferior. La latencia con el contador se midió con el lazo apagado.
 - Mientras se exporta, la ISR no guarda muestras. El bloque exportado es continuo, pero los 3,5 s de la exportación no quedan registrados.
-- El PR no tiene antiwindup: si $m$ se satura, la parte resonante sigue integrando.
+- El PR no tiene antiwindup: si $m$ se satura, la parte resonante sigue integrando. En las pruebas el índice de modulación no llegó a los límites.
 - En el modo emulador el PWM queda encendido con $m = 0$ aun con el lazo apagado, porque el RC necesita la conmutación para dar el offset. Por eso ese modo no se usa con el puente conectado.
 
 **Mejoras posibles.**
 
+- Filtrar o promediar la medición de corriente, o mejorar la ganancia del acondicionamiento, para reducir los escalones y los valores aislados.
 - Agregar al PWM una entrada de falla o un *watchdog* que apague las compuertas si el software deja de escribir `duty_ref`.
+- Agregar antiwindup al PR.
 - Medir la latencia con el lazo activo y durante más tiempo, y guardar `lat_min` y `lat_max` junto con cada exportación.
 - Disparar la captura del buffer un tiempo fijo después de un evento (un cambio de amplitud o de carga), para que el transitorio quede dentro de la ventana.
-- Agregar antiwindup al PR.
-- Medir la corriente real en lazo abierto con el modo de SW13, para comparar con $m\,V_{dc}/R$, y después cerrar el lazo con el sensor empezando en 0,2 A.
+- Repetir las pruebas 5 y 6 con la carga final y calcular el error RMS del lazo con la corriente real.
 
 ---
 
 ## 14. Conclusiones
 
+- Se cumplieron los objetivos del proyecto: el sistema embebido regula la corriente del inversor monofásico en lazo cerrado con la corriente real, con el PWM propio, el XADC sincronizado y el PR discreto ejecutándose cada 50 µs.
 - Dividir el trabajo entre hardware y software según los tiempos que necesita cada parte funcionó: el PWM y el XADC resuelven lo que pasa en nanosegundos, y el procesador tiene 39 µs libres de cada periodo de 50 µs.
 - Cargar los registros del PWM solo en el valle hace que el jitter de la ISR no deforme los pulsos; solo puede atrasar un periodo de conmutación la aplicación de un valor nuevo.
 - Sincronizar el XADC con el valle de la portadora da muestras en el centro del pulso, lejos de los flancos. Con el emulador, el error del lazo quedó al nivel del ruido de la medición.
 - Las mediciones en la tarjeta coincidieron con los valores calculados (periodo, ancho de pulso, tiempo muerto e índice de modulación), y la exportación por UART coincidió con el osciloscopio.
-- El emulador RC fue clave para probar la cadena completa antes de tener la etapa de potencia. La lección es preparar desde el inicio una forma de probar el sistema sin depender de la otra parte del proyecto.
+- El emulador RC fue clave para probar la cadena completa antes de tener la etapa de potencia. El controlador verificado con la planta simulada y con el emulador funcionó con la planta real sin cambios en su estructura. La lección es preparar desde el inicio una forma de probar el sistema sin depender de la otra parte del proyecto.
 - En la integración, el problema principal no estuvo en el PWM sino en la interfaz eléctrica con el driver: con VDD = 5 V el IR2110 no reconocía bien las salidas de 3,3 V. Comparar con la prueba del Arduino ayudó a ubicar la falla, y al alimentar VDD con 3,3 V las piernas conmutaron bien. Conviene revisar los niveles lógicos entre las dos partes antes de energizar.
+- Con la carga de 4,7 Ω, la corriente real siguió referencias de 0,2 A, 0,5 A y 1,0 A pico a 50 Hz. La resolución de la medición limita la precisión con corrientes pequeñas, y es el punto que más conviene mejorar, junto con el antiwindup y el *watchdog* del PWM.
 
 ---
 
